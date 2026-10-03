@@ -1,6 +1,7 @@
 """Exercise installed entry points at the process and HTTP boundaries."""
 
 import os
+import re
 import shutil
 import socket
 import subprocess
@@ -28,14 +29,23 @@ def cli_env():
         ("codex-call-mcp", ["--help"], "stdio"),
     ],
 )
-def test_help_without_credentials_has_no_runtime_side_effects(tmp_path, command, args, expected):
+@pytest.mark.parametrize("color", [False, True])
+def test_help_without_credentials_has_no_runtime_side_effects(
+    tmp_path, command, args, expected, color
+):
     executable = shutil.which(command)
     assert executable
+    env = cli_env() | {"TERM": "xterm-256color"}
+    env.pop("NO_COLOR", None)
+    env.pop("FORCE_COLOR", None)
+    env["FORCE_COLOR" if color else "NO_COLOR"] = "1"
     result = subprocess.run(
-        [executable, *args], cwd=tmp_path, env=cli_env(), capture_output=True, text=True, timeout=15
+        [executable, *args], cwd=tmp_path, env=env, capture_output=True, text=True, timeout=15
     )
     assert result.returncode == 0, result.stderr
-    assert expected in result.stdout
+    # Rich may insert terminal styling between characters of an option name.
+    visible_help = re.sub(r"\x1b\[[0-?]*[ -/]*[@-~]", "", result.stdout)
+    assert expected in visible_help
     assert list(tmp_path.iterdir()) == []
 
 
