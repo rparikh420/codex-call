@@ -1,0 +1,47 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "codex-call"
+version = "0.1.0"
+description = "Independent prompt-based phone calling for Codex and MCP clients"
+readme = "README.md"
+requires-python = ">=3.11,<3.14"
+license = "MIT"
+dependencies = [
+  "fastapi>=0.115,<1",
+  "uvicorn>=0.34,<1",
+  "httpx>=0.28,<1",
+  "pydantic-settings>=2.8,<3",
+  "mcp>=1.20,<2",
+  "livekit-agents[anthropic,deepgram,elevenlabs,silero]>=1.4,<2",
+  "aiohttp>=3.12,<4",
+]
+
+[project.scripts]
+codex-call-api = "codex_call.api:main"
+codex-call-mcp = "codex_call.mcp_server:main"
+codex-call-worker = "codex_call.worker:main"
+
+[dependency-groups]
+dev = [
+    "httpx2>=2.13.1,<3",
+    "pytest>=8.3,<10",
+    "pytest-asyncio>=0.25,<2",
+    "ruff>=0.11,<1",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/codex_call"]

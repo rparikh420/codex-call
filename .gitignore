@@ -1,0 +1,14 @@
+.venv/
+.env
+.env.*
+!.env.example
+data/
+*.sqlite*
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+dist/
+*.egg-info/
+
+# Local implementation coordination is outside the publication boundary.
+.superpowers/

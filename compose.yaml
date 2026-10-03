@@ -1,0 +1,27 @@
+services:
+  api:
+    build: .
+    env_file: .env
+    environment:
+      CODEX_CALL_MODE: ${CODEX_CALL_MODE:-simulate}
+      CODEX_CALL_DATABASE_PATH: /data/calls.sqlite3
+    command: [codex-call-api, --host, 0.0.0.0, --port, "8000"]
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - call-data:/data
+    restart: unless-stopped
+  worker:
+    build: .
+    profiles: [live]
+    env_file: .env
+    environment:
+      CODEX_CALL_MODE: ${CODEX_CALL_MODE:-simulate}
+      CODEX_CALL_API_BASE_URL: http://api:8000
+    command: [codex-call-worker, start]
+    depends_on: [api]
+    expose:
+      - "8081"
+    restart: unless-stopped
+volumes:
+  call-data:
